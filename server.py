@@ -1,31 +1,40 @@
 import pygame
 import pygame.gfxdraw
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((500,500))
-    screen.fill((255, 0, 0))
-    s = pygame.Surface(screen.get_size(), pygame.SRCALPHA, 32)
-    pygame.draw.line(s, (0,0,0), (250, 250), (250+200,250))
+BOARD_SIZE = 10
+Cell_SIzE = 50
+SCREEN_WIDTH = 750
+SCREEN_HEIGHT = 750
+WHITE = (255, 255, 255)
+LINE_COLOR = (0, 0, 0)
 
-    width = 1
-    for a_radius in range(width):
-        radius = 200
-        pygame.gfxdraw.aacircle(s, 250, 250, radius-a_radius, (0, 0, 0))
+pygame.init()
 
-    screen.blit(s, (0, 0))
-    pygame.display.flip()
-    try:
-        while 1:
-            event = pygame.event.wait()
-            if event.type == pygame.QUIT:
-                break
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.unicode == 'q':
-                    break
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("BattleShip Game")
+
+def draw_grid():
+    for i in range(BOARD_SIZE + 1):
+        pygame.draw.line(screen, LINE_COLOR, (CELL_SIZE * i, 0), (CELL_SIZE * i, BOARD_SIZE * CELL_SIZE))
+    for i in range(BOARD_SIZE + 1):
+        pygame.draw.line(screen, LINE_COLOR, (0, CELL_SIZE * i), (BOARD_SIZE * CELL_SIZE, CELL_SIZE * i))
+
+        def draw_board():
+            screen.fill(WHITE)
+            draw_grid()
             pygame.display.flip()
-    finally:
-        pygame.quit()
+        def main():
+            draw_board()
+
+            running = True
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                        if event.key == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                running = False
+            pygame.quit()
 
 if __name__ == '__main__':
     main()
