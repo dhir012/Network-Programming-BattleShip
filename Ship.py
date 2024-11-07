@@ -1,3 +1,5 @@
+#Defines a simple system to place ships on the game board
+#Manage their states too
 from server import BOARD_SIZE
 
 class Ship:

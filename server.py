@@ -1,3 +1,4 @@
+#Sets up the Battleship grid/Game Board
 import pygame
 import pygame.gfxdraw
 
