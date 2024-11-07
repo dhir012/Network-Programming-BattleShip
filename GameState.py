@@ -3,7 +3,7 @@ import pygame
 
 from PlayerToAttack import attack
 from Ship import place_ship
-from server import BOARD_SIZE
+from Game import BOARD_SIZE
 
 
 def draw_game_state(player_board, opponent_board, param, param1):
