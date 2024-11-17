@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Battleship Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        #gameBoard {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-template-rows: repeat(10, 40px);
+            gap: 2px;
+            border: 2px solid #fff;
+            margin: 20px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: #1e90ff;
+            cursor: pointer;
+        }
+        .hit {
+            background-color: #ff0000;
+        }
+        .miss {
+            background-color: #90ee90;
+        }
+        .ship {
+            background-color: #808080;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #fff;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>BattleShip</h1>
+    <p id="status">Waiting for opponent...</p>
+    <div id="gameBoard" class="hidden">
+        <div id="playerBoard" class="board"></div>
+        <div id="opponentBoard" class="board"></div>
+    </div>
+    <div id="startGame" class="hidden">
+        <button id="startBtn" class="btn">Start Game</button>
+    </div>
+    <div id="playerInfo">
+        <input type="text" id="playerName" placeholder="Enter your name" />
+        <button id="findPlayerBtn" class="btn">Find Player</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let playerName;
+        let playerId;
+        let isPlayerTurn = false;
+        let gameStarted = false;
+        let playerShips = [];
+        let opponentShips = [];
+
+        const playerBoard = Array(10).fill().map(() => Array(10).fill(null));
+        const opponentBoard = Array(10).fill().map(() => Array(10).fill(null));
+
+        // Define ship sizes (e.g., 5 ships with different lengths)
+        const shipSizes = [5, 4, 3, 3, 2];
+
+        // Create game boards dynamically
+        function createBoard(boardId, isOpponent = false) {
+            const boardElement = document.getElementById(boardId);
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    if (!isOpponent && !gameStarted) {
+                        cell.addEventListener("click", () => handleShipPlacement(x, y));
+                    } else if (!isOpponent && gameStarted) {
+                        cell.addEventListener("click", () => handleCellClick(x, y));
+                    }
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Place ship on the player's board
+        function handleShipPlacement(x, y) {
+            if (playerShips.length === shipSizes.length) {
+                alert("All ships are placed. Start the game!");
+                return;
+            }
+
+            const shipSize = shipSizes[playerShips.length];
+            let direction = prompt("Enter direction (h for horizontal, v for vertical):").toLowerCase();
+            let cells = [];
+
+            if (direction === 'h') {
+                for (let i = 0; i < shipSize; i++) {
+                    if (x + i >= 10 || playerBoard[y][x + i] !== null) {
+                        alert("Invalid placement!");
+                        return;
+                    }
+                    cells.push([x + i, y]);
+                }
+            } else if (direction === 'v') {
+                for (let i = 0; i < shipSize; i++) {
+                    if (y + i >= 10 || playerBoard[y + i][x] !== null) {
+                        alert("Invalid placement!");
+                        return;
+                    }
+                    cells.push([x, y + i]);
+                }
+            } else {
+                alert("Invalid direction!");
+                return;
+            }
+
+            cells.forEach(([x, y]) => {
+                playerBoard[y][x] = "ship";
+                const cell = document.querySelector(`#playerBoard .cell[data-x='${x}'][data-y='${y}']`);
+                cell.classList.add("ship");
+            });
+            playerShips.push(cells);
+            alert(`Ship of size ${shipSize} placed!`);
+
+            if (playerShips.length === shipSizes.length) {
+                socket.emit("ready_for_game");
+                updateStatus("Waiting for the opponent to place ships...");
+            }
+        }
+
+        // Handle player's shot on opponent's board
+        function handleCellClick(x, y) {
+            if (!gameStarted || !isPlayerTurn) return;
+            socket.emit("move", { x, y });
+            isPlayerTurn = false;
+            updateStatus("Waiting for opponent's move...");
+        }
+
+        // Update game status
+        function updateStatus(status) {
+            document.getElementById("status").textContent = status;
+        }
+
+        // Initialize game when both players are connected
+        socket.on('start_game', () => {
+            gameStarted = true;
+            updateStatus("Game started! Your move.");
+            document.getElementById("gameBoard").classList.remove('hidden');
+            document.getElementById("playerInfo").classList.add('hidden');
+            createBoard("playerBoard");
+            createBoard("opponentBoard", true);
+        });
+
+        // When opponent makes a move
+        socket.on('move_result', (data) => {
+            const { x, y, result } = data;
+            const opponentCell = document.querySelector(`#opponentBoard .cell[data-x='${x}'][data-y='${y}']`);
+            if (result === "Hit") {
+                opponentCell.classList.add("hit");
+            } else if (result === "Miss") {
+                opponentCell.classList.add("miss");
+            }
+            isPlayerTurn = true;
+            updateStatus("Your turn!");
+        });
+
+        // Handle game end
+        socket.on('game_over', (winner) => {
+            updateStatus(`${winner} wins!`);
+        });
+
+        // Handle finding a player and starting the game
+        document.getElementById("findPlayerBtn").addEventListener("click", () => {
+            playerName = document.getElementById("playerName").value;
+            if (!playerName) {
+                alert("Please enter a name.");
+                return;
+            }
+            socket.emit("find_player", { name: playerName });
+            updateStatus("Finding an opponent...");
+        });
+
+        // Handle the start of the game after both players are connected
+        document.getElementById("startBtn").addEventListener("click", () => {
+            socket.emit("start_game");
+        });
+    </script>
+</body>
+</html>
