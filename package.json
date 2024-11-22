@@ -1,10 +1,28 @@
 {
+  "name": "Battleship Project",
+  "version": "1.0.0",
+  "description": "Battleship with Network Programming",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
   "dependencies": {
-    "express": "^4.21.1",
-    "http": "^0.0.1-security",
-    "socket.io": "^4.8.1"
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "nodemon": "^2.0.4"
   }
 }

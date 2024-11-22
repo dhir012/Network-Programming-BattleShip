@@ -1,27 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battleship</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-</head>
-<body>
-    <h1>Battleship</h1>
-    <div id="game-container">
-        <div id="player-board" class="board">
-            <h2>Your Board</h2>
-            <div id="player-grid" class="grid"></div>
-        </div>
-        <div id="opponent-board" class="board">
-            <h2>Opponent's Board</h2>
-            <div id="opponent-grid" class="grid"></div>
-        </div>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>BattleShip</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="splash-container">
+      <h1 class="splash-title">Battleship</h1>
+      <div>
+        <a href="/multiplayer.html" class="btn splash-btn">Play Now</a>
+      </div>
     </div>
-    <button id="start-game" disabled>Start Game</button>
-    <p id="game-status"></p>
 
-    <script src="/index.js"></script>
-</body>
+    <img src="" class="splash-battleship-image">
+  </body>
 </html>
